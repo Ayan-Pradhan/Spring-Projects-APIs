@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import com.springapp.app.dto.ResponseDto;
 import com.springapp.app.entities.Expense;
 import com.springapp.app.entities.Report;
 import com.springapp.app.entities.User;
+import com.springapp.app.enums.ExecutionMessages;
 import com.springapp.app.exception.RecordNotFoundException;
 import com.springapp.app.repo.ExpenseRepository;
 import com.springapp.app.repo.ReportRepository;
@@ -42,10 +44,10 @@ public class TrackerService {
 		throw new RecordNotFoundException("Expense details not found with this id and user");
 	}
 	
-	public List<Expense> getExpenses() {
+	public List<ExpenseDto> getExpenses() {
 		List<Expense> expenses = expenseRepo.findByUser(getLoggedInUserDetails());
-		if(expenses.isEmpty()) throw new RecordNotFoundException("Expense details not found for this user");
-		return expenses;
+		if(!expenses.isEmpty()) return mapper.map(expenses, new TypeToken<List<ExpenseDto>>() {}.getType());
+		throw new RecordNotFoundException("Expense details not found for this user");
 	}
 	
 	@Transactional
@@ -53,8 +55,8 @@ public class TrackerService {
 		Expense mapped = mapper.map(expense, Expense.class);
 		mapped.setUser(getLoggedInUserDetails());
 		mapped.setTimestamp(LocalDateTime.now());
-		expenseRepo.save(mapped);
-		return new ResponseDto(true,"Expense Added Successfully");
+		
+		return new ResponseDto(true,ExecutionMessages.ADDED.value(), expenseRepo.save(mapped));
 	}
 	
 	@Transactional
@@ -62,8 +64,7 @@ public class TrackerService {
 		return expenseRepo.findByIdAndUser(id, getLoggedInUserDetails()).map(existingExpense->{
 			expense.setTimestamp(LocalDateTime.now());
 			mapper.map(expense, existingExpense);
-			expenseRepo.save(existingExpense);
-			return new ResponseDto(true, "Expense Details Updated");
+			return new ResponseDto(true, ExecutionMessages.UPDATED.value(), expenseRepo.save(existingExpense));
 		}) 
 		.orElseThrow(() -> new RecordNotFoundException("Expense with id: "+id+" not found for the current user"));
 	}
@@ -71,7 +72,7 @@ public class TrackerService {
 	@Transactional
 	public ResponseDto deleteExpense(Integer id) {
 		int status = expenseRepo.deleteByIdAndUser(id, getLoggedInUserDetails());
-		if(status != 0) return new ResponseDto(true, "Expense Deleted Successfully");
+		if(status != 0) return new ResponseDto(true, ExecutionMessages.DELETED.value(), id);
 		throw new RecordNotFoundException("Expense with id: "+id+" not found for the current user");
 	}
 	

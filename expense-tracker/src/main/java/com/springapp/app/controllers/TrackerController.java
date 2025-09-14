@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.springapp.app.dto.ExpenseDto;
 import com.springapp.app.dto.ResponseDto;
-import com.springapp.app.entities.Expense;
 import com.springapp.app.entities.Report;
 import com.springapp.app.services.TrackerService;
 
@@ -34,7 +33,7 @@ public class TrackerController {
 	}
 
 	@GetMapping("/expenses")
-	public ResponseEntity<List<Expense>> getAllExpenses() {
+	public ResponseEntity<List<ExpenseDto>> getAllExpenses() {
 		return ResponseEntity.ok(service.getExpenses());
 	}
 

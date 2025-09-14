@@ -14,7 +14,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExpenseDto {
-	
 	@Size(min = 1, message = "Title must not be blank")
 	private String title;
 	private String desc;

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.springapp.app.dto.ResponseDto;
 import com.springapp.app.dto.UserDto;
 import com.springapp.app.entities.User;
+import com.springapp.app.enums.ExecutionMessages;
 import com.springapp.app.exception.RecordNotFoundException;
 import com.springapp.app.repo.UserRepository;
 
@@ -25,12 +26,11 @@ public class UserService {
 	
 	public ResponseDto registerUser(UserDto userDto) {
 		if(repository.findById(userDto.getEmail()).isPresent()) {
-			return new ResponseDto(false, "User already exists with this email");
+			return new ResponseDto(false, "User already exists with this email", ExecutionMessages.DEFAULT_VALUE.value());
 		}
 		userDto.setPassword(encoder.encode(userDto.getPassword()));
 		User user = mapper.map(userDto, User.class);
-		repository.save(user);
-		return new ResponseDto(true, "Registration Successful");
+		return new ResponseDto(true, "Registration Successful",repository.save(user));
 	}
 	
 	public User getUser(String id) {
